@@ -1,5 +1,5 @@
 # This program formats Google Analytics hour of day from 2022030115 to 2022/03/01 15
-# for easy reading. Acceps either csv or xlsx, converts csv to xlsx, exports xlslx.
+# for easy reading. Acceps either csv or xlsx, converts csv to xlsx, exports xlsx with _reformatted suffix.
 
 #!/usr/local/bin/python3.10
 
@@ -8,20 +8,19 @@ from openpyxl import load_workbook # import openpyxl to parse and modify csv
 
 print("This program formats Google Analytics hour of day from 2022030115 to 2022/03/01 15 for easy reading")
 
-docName = input("Enter xlsx name or path: ")
 
 def reformat(file):
-    print("file", file)
+    # print("file", file)
 
     book = load_workbook(file)
     sheet = book.active  # iterable
 
-    rowCounter = 0
     # check if a value is in a cell & removes row or column as applicable
     for row in sheet:
         for cell in row:
             try:
                 if 'Hour of Day' in cell.value:
+                    print("Hour of Day found")
 
                     start_column = cell.column
                     # start_point = cell.coordinate
@@ -60,13 +59,13 @@ def reformat(file):
 
     if ".x" in file:
         docNameNew = file.split(".x")
-        print("docNameNew", docNameNew)
+        # print("docNameNew", docNameNew)
         fileUpdated = docNameNew[0] + "_reformatted" + ".x" + docNameNew[1]
-        print("fileUpdated", fileUpdated)
+        # print("fileUpdated", fileUpdated)
         book.save(filename=f'{fileUpdated}')
     
-    # print("Done")
-
+    print("Done")
+    getFileName()
 
 # function below changes csv to excel
 def convertCSV2Excel(docName, excelFile):
@@ -82,7 +81,8 @@ def convertCSV2Excel(docName, excelFile):
             print("Error 2: Writing to file. Please make sure you have permission to write.")
 
     except pd.errors.ParserError:
-        print("Error 1: reading file.")
+        print("Error 1: reading file. Re-download/save & try again")
+        getFileName()
 
 # converter() function converts csv to xlsx then calls removeCurrencyColumn() to remove appropriate column
 def converter(docName):
@@ -94,8 +94,16 @@ def converter(docName):
         if convertCSV2Excel(docName, excelFile): # converts to xlsx & returns true
             reformat(excelFile)
         else:
-            print("There was an issue with the" + docNameLastOnly[len(docNameLastOnly)-1] + ", please try a different one.")
+            print("There was an issue with " + docNameLastOnly[len(docNameLastOnly)-1] + ", please try a different one.")
+            getFileName()
     else:
         reformat(docName) # if not csv, removes column
 
-converter(docName)
+
+
+def getFileName():
+    docName = input("Enter csv or xlsx filename or path: ")
+    converter(docName)
+
+
+getFileName()
